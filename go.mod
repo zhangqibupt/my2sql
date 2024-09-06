@@ -1,4 +1,4 @@
-module my2sql
+module github.com/zhangqibupt/my2sql
 
 go 1.19
 
