@@ -109,6 +109,8 @@ type ConfCmd struct {
 	IfSetStartDateTime bool
 	IfSetStopDateTime  bool
 
+	MaxFileNumber int
+
 	LocalBinFile string
 
 	OutputToScreen bool
@@ -202,6 +204,7 @@ func (this *ConfCmd) ParseCmdOptions() {
 	flag.StringVar(&this.StartFile, "start-file", "", "binlog file to start reading")
 	flag.UintVar(&this.StartPos, "start-pos", 4, "start reading the binlog at position")
 	flag.StringVar(&this.StopFile, "stop-file", "", "binlog file to stop reading")
+	flag.IntVar(&this.MaxFileNumber, "max-file-number", 0, "max binlog file to parse")
 	flag.UintVar(&this.StopPos, "stop-pos", 4, "Stop reading the binlog at position")
 	flag.StringVar(&this.LocalBinFile, "local-binlog-file", "", "local binlog files to process, It works with -mode=file ")
 
@@ -317,6 +320,19 @@ func (this *ConfCmd) ParseCmdOptions() {
 
 	} else {
 		this.IfSetStartFilePos = false
+	}
+
+	if this.MaxFileNumber > 0 {
+		if !this.IfSetStartFilePos {
+			log.Fatalf("invalid arg, max-file-number only works with -start-file")
+		}
+		if this.StopFile != "" {
+			log.Fatalf("invalid arg, max-file-number, stop-file must not be set at the same time")
+		}
+
+		binBaseName, binBaseIndx := GetBinlogBasenameAndIndex(this.StartFile)
+		stopIndex := binBaseIndx + this.MaxFileNumber - 1
+		this.StopFile = GetNextBinlog(binBaseName, stopIndex)
 	}
 
 	if this.StopFile != "" {

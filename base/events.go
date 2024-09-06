@@ -228,7 +228,7 @@ func PrintExtraInfoForForwardRollbackupSql(cfg *ConfCmd, wg *sync.WaitGroup) {
 		if _, ok := fhArr[tmpFileName]; !ok {
 			FH, err = os.OpenFile(tmpFileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 			if err != nil {
-
+				log.Fatalf("error to open file %s %v", tmpFileName, err)
 			}
 			bufFH = bufio.NewWriter(FH)
 			fhArrBuf[tmpFileName] = bufFH
