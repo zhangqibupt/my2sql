@@ -31,11 +31,6 @@ type ForwardRollbackSqlOfPrint struct {
 	sqlInfo ExtraSqlInfoOfPrint
 }
 
-var (
-	ForwardSqlFileNamePrefix  string = "forward"
-	RollbackSqlFileNamePrefix string = "rollback"
-)
-
 func GenForwardRollbackSqlFromBinEvent(i uint, cfg *ConfCmd, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var (
@@ -228,7 +223,7 @@ func PrintExtraInfoForForwardRollbackupSql(cfg *ConfCmd, wg *sync.WaitGroup) {
 		if _, ok := fhArr[tmpFileName]; !ok {
 			FH, err = os.OpenFile(tmpFileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 			if err != nil {
-				log.Fatalf("error to open file %s %v", tmpFileName, err)
+				log.Fatalf("error to open file %s to write redo/rollback sql", tmpFileName)
 			}
 			bufFH = bufio.NewWriter(FH)
 			fhArrBuf[tmpFileName] = bufFH
@@ -288,33 +283,22 @@ func PrintExtraInfoForForwardRollbackupSql(cfg *ConfCmd, wg *sync.WaitGroup) {
 }
 
 func GetForwardRollbackSqlFileName(schema string, table string, filePerTable bool, outDir string, ifRollback bool, binlog string, ifTmp bool) string {
-
-	_, idx := GetBinlogBasenameAndIndex(binlog)
+	fileName := binlog
 
 	if ifRollback {
-		if ifTmp {
-			if filePerTable {
-				return filepath.Join(outDir, fmt.Sprintf(".%s.%s.%s.%d.sql", schema, table, RollbackSqlFileNamePrefix, idx))
-			} else {
-				return filepath.Join(outDir, fmt.Sprintf(".%s.%d.sql", RollbackSqlFileNamePrefix, idx))
-			}
-
-		} else {
-			if filePerTable {
-				return filepath.Join(outDir, fmt.Sprintf("%s.%s.%s.%d.sql", schema, table, RollbackSqlFileNamePrefix, idx))
-			} else {
-				return filepath.Join(outDir, fmt.Sprintf("%s.%d.sql", RollbackSqlFileNamePrefix, idx))
-			}
-		}
-	} else {
-		if filePerTable {
-			return filepath.Join(outDir, fmt.Sprintf("%s.%s.%s.%d.sql", schema, table, ForwardSqlFileNamePrefix, idx))
-		} else {
-			return filepath.Join(outDir, fmt.Sprintf("%s.%d.sql", ForwardSqlFileNamePrefix, idx))
-		}
-
+		fileName += ".rollback"
 	}
 
+	if filePerTable {
+		fileName = fmt.Sprintf("%s.%s.%s.sql", schema, table, fileName)
+	} else {
+		fileName = fmt.Sprintf("%s.sql", fileName)
+	}
+
+	if ifTmp {
+		return filepath.Join(outDir, "."+fileName)
+	}
+	return filepath.Join(outDir, fileName)
 }
 
 func GetForwardRollbackContentLineWithExtra(sq ForwardRollbackSqlOfPrint, ifExtra bool) string {
