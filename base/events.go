@@ -3,17 +3,16 @@ package base
 import (
 	"bufio"
 	"fmt"
-	"my2sql/sqltypes"
+	"github.com/zhangqibupt/my2sql/sqltypes"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
-	SQL "my2sql/sqlbuilder"
-	constvar "my2sql/constvar"
 	"github.com/siddontang/go-log/log"
-
+	constvar "github.com/zhangqibupt/my2sql/constvar"
+	SQL "github.com/zhangqibupt/my2sql/sqlbuilder"
 )
 
 type ExtraSqlInfoOfPrint struct {
@@ -97,7 +96,7 @@ func GenForwardRollbackSqlFromBinEvent(i uint, cfg *ConfCmd, wg *sync.WaitGroup)
 
 				}
 			}
-			
+
 			if colType == "blob" {
 				// text is stored as blob
 				if strings.Contains(strings.ToLower(tbInfo.Columns[ci].FieldType), "text") {

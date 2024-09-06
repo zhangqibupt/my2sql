@@ -4,7 +4,7 @@ import (
 	"log"
 	"sync"
 
-	my "my2sql/base"
+	my "github.com/zhangqibupt/my2sql/base"
 )
 
 func main() {
