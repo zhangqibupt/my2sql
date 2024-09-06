@@ -1,10 +1,10 @@
 package main
 
 import (
+	"log"
 	"sync"
 
 	my "my2sql/base"
-        "github.com/go-mysql-org/go-mysql/replication"
 )
 
 func main() {
@@ -28,19 +28,17 @@ func main() {
 	}
 	if my.GConfCmd.Mode == "repl" {
 		my.ParserAllBinEventsFromRepl(my.GConfCmd)
-	} else if my.GConfCmd.Mode == "file" {
-		myParser := my.BinFileParser{}
-		myParser.Parser = replication.NewBinlogParser()
-		// donot parse mysql datetime/time column into go time structure, take it as string
-		myParser.Parser.SetParseTime(false) 
-		// sqlbuilder not support decimal type 
-		myParser.Parser.SetUseDecimal(false) 
-		myParser.MyParseAllBinlogFiles(my.GConfCmd)
+	} else {
+		log.Fatalf("unsupported mode %s", my.GConfCmd.Mode)
+		//myParser := my.BinFileParser{}
+		//myParser.Parser = replication.NewBinlogParser()
+		//// donot parse mysql datetime/time column into go time structure, take it as string
+		//myParser.Parser.SetParseTime(false)
+		//// sqlbuilder not support decimal type
+		//myParser.Parser.SetUseDecimal(false)
+		//myParser.MyParseAllBinlogFiles(my.GConfCmd)
 	}
 	wgGenSql.Wait()
 	close(my.GConfCmd.SqlChan)
-	wg.Wait() 
+	wg.Wait()
 }
-
-
-
